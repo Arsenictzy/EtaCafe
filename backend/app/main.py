@@ -18,7 +18,7 @@ app = FastAPI(
     description="Backend REST API berbasis FastAPI dan PostgreSQL dengan pemisahan router per role: Pelanggan, Kasir, Dapur, Manajer."
 )
 
-# Konfigurasi CORS Middleware agar frontend React dapat berkomunikasi
+# Konfigurasi CORS Middleware agar frontend React & HTML dapat berkomunikasi
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,

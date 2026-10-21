@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<!--
+  PAGE: Login / Register
+  FILE: frontend-pelanggan/pages/login.html
+  Menyerupai desain gambar referensi:
+  - Header coklat gelap + "Coffee Shop" cursive
+  - Hero background foto kafe
+  - Card cream melayang di tengah hero
+  - Tab Login / Sign Up
+  - Input email & password dengan eye toggle
+  - Footer coklat gelap
+-->
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EtaCafe — Login</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- ═══════════════════ NAVBAR ═══════════════════ -->
+  <nav class="navbar">
+    <span class="navbar-logo">Coffee Shop</span>
+  </nav>
+  <div class="nav-divider"></div>
+
+  <!-- ═══════════════════ MAIN ═══════════════════ -->
+  <main class="main-content">
+    <div class="auth-page">
+      <!-- Background hero photo -->
+      <div class="auth-hero-bg">
+        <img
+          src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1400&q=80"
+          alt="Coffee shop background"
+        />
+
+        <!-- Floating auth card -->
+        <div class="auth-card" id="auth-card">
+
+          <!-- Tabs: Login / Sign Up -->
+          <div class="auth-tabs">
+            <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</button>
+            <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Sign Up</button>
+          </div>
+
+          <!-- Error message -->
+          <div class="auth-error" id="auth-error" style="display:none;"></div>
+
+          <!-- ─── LOGIN FORM ─── -->
+          <form id="login-form" onsubmit="handleLogin(event)">
+            <div class="auth-form-group">
+              <label class="auth-label" for="login-email">Username or email</label>
+              <input
+                class="auth-input"
+                type="text"
+                id="login-email"
+                placeholder=""
+                autocomplete="email"
+                required
+              />
+            </div>
+
+            <div class="auth-form-group">
+              <label class="auth-label" for="login-password">Password</label>
+              <div class="auth-input-row">
+                <input
+                  type="password"
+                  id="login-password"
+                  placeholder=""
+                  autocomplete="current-password"
+                  required
+                />
+                <button type="button" class="toggle-eye" onclick="togglePassword('login-password', this)">
+                  👁
+                </button>
+              </div>
+            </div>
+
+            <div class="auth-forgot">Forgot password?</div>
+
+            <button class="btn-auth" type="submit" id="login-btn">Login</button>
+          </form>
+
+          <!-- ─── REGISTER FORM ─── -->
+          <form id="signup-form" style="display:none;" onsubmit="handleRegister(event)">
+            <div class="auth-form-group">
+              <label class="auth-label" for="reg-name">Full Name</label>
+              <input class="auth-input" type="text" id="reg-name" required />
+            </div>
+
+            <div class="auth-form-group">
+              <label class="auth-label" for="reg-email">Email or Phone</label>
+              <input class="auth-input" type="text" id="reg-email" required />
+            </div>
+
+            <div class="auth-form-group">
+              <label class="auth-label" for="reg-password">Password</label>
+              <div class="auth-input-row">
+                <input type="password" id="reg-password" required minlength="6" />
+                <button type="button" class="toggle-eye" onclick="togglePassword('reg-password', this)">👁</button>
+              </div>
+            </div>
+
+            <button class="btn-auth" type="submit" id="reg-btn">Sign Up</button>
+          </form>
+
+        </div><!-- /auth-card -->
+      </div><!-- /auth-hero-bg -->
+    </div><!-- /auth-page -->
+  </main>
+
+  <!-- ═══════════════════ FOOTER ═══════════════════ -->
+  <footer class="footer">
+    <div class="footer-brand">
+      <span class="footer-brand-logo">Coffee Shop</span>
+      <span class="footer-brand-tagline">one Stop | one Heart | one Cup</span>
+    </div>
+    <div class="footer-links">
+      <a href="home.html" class="footer-pill" id="footer-btn-company">our Company</a>
+      <a href="products.html?type=coffee" class="footer-pill" id="footer-btn-coffee">our Coffee</a>
+      <a href="products.html?type=pastry" class="footer-pill" id="footer-btn-pastry">our Pastry</a>
+    </div>
+    <div class="footer-copy">@ 2023 All Rights Reserved</div>
+  </footer>
+
+</div><!-- /page-wrapper -->
+
+<script type="module">
+  import { login, register } from '../api.js';
+
+  /* expose to inline handlers */
+  window.switchTab = switchTab;
+  window.handleLogin = handleLogin;
+  window.handleRegister = handleRegister;
+  window.togglePassword = togglePassword;
+
+  /* ── Check if already logged in ── */
+  const stored = localStorage.getItem('etacafe_user');
+  if (stored) {
+    const u = JSON.parse(stored);
+    if (u.role === 'pelanggan') location.href = 'home.html';
+  }
+
+  function switchTab(tab) {
+    const loginForm  = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const tabLogin   = document.getElementById('tab-login');
+    const tabSignup  = document.getElementById('tab-signup');
+    clearError();
+
+    if (tab === 'login') {
+      loginForm.style.display  = '';
+      signupForm.style.display = 'none';
+      tabLogin.classList.add('active');
+      tabSignup.classList.remove('active');
+    } else {
+      loginForm.style.display  = 'none';
+      signupForm.style.display = '';
+      tabLogin.classList.remove('active');
+      tabSignup.classList.add('active');
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('auth-error');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function clearError() {
+    const el = document.getElementById('auth-error');
+    el.style.display = 'none';
+    el.textContent = '';
+  }
+
+  function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = '🙈';
+    } else {
+      input.type = 'password';
+      btn.textContent = '👁';
+    }
+  }
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    clearError();
+    const email    = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const btn      = document.getElementById('login-btn');
+    btn.disabled   = true;
+    btn.textContent = 'Loading...';
+
+    try {
+      const data = await login(email, password);
+      localStorage.setItem('etacafe_token', data.access_token);
+      localStorage.setItem('etacafe_user', JSON.stringify(data.user));
+
+      if (data.user.role === 'pelanggan') {
+        location.href = 'home.html';
+      } else {
+        showError(`Akun ini memiliki role "${data.user.role}", bukan pelanggan.`);
+        localStorage.clear();
+      }
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Login';
+    }
+  }
+
+  async function handleRegister(e) {
+    e.preventDefault();
+    clearError();
+    const name     = document.getElementById('reg-name').value.trim();
+    const email    = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const btn      = document.getElementById('reg-btn');
+    btn.disabled   = true;
+    btn.textContent = 'Loading...';
+
+    try {
+      await register(name, email, password);
+      /* Auto-login after register */
+      const data = await login(email, password);
+      localStorage.setItem('etacafe_token', data.access_token);
+      localStorage.setItem('etacafe_user', JSON.stringify(data.user));
+      location.href = 'home.html';
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Sign Up';
+    }
+  }
+
+  document.getElementById('login-form').addEventListener('submit', handleLogin);
+  document.getElementById('signup-form').addEventListener('submit', handleRegister);
+</script>
+
+</body>
+</html>

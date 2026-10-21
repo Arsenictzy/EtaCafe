@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<!--
+  PAGE: Products (Katalog Menu)
+  FILE: frontend-pelanggan/pages/products.html
+  Sesuai dengan referensi desain gambar 2:
+  - Header tetap di atas (Coffee Shop, Products, Checkout badge)
+  - Tanpa pill kategori di atas (bersih langsung kartu menu)
+  - Kartu menu tersusun rapi: Gambar kiri, Nama tebal, Deskripsi justify, Harga & Tombol "Add to Cart" pill outline di kanan
+  - Footer tetap di bawah dengan 3 tombol aktif: "our Company", "our Coffee", "our Pastry"
+  - Bagian tengah yang dapat di-scroll
+-->
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EtaCafe — Menu Products</title>
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    body {
+      background-color: #ffffff;
+    }
+
+    .main-content {
+      background: #ffffff;
+    }
+
+    .products-page {
+      padding: 30px 40px 60px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* ─── MENU CARDS (Sesuai Gambar 2) ─── */
+    .menu-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .menu-card {
+      display: flex;
+      gap: 28px;
+      align-items: flex-start;
+      padding: 24px 0;
+      border-bottom: 1.5px solid #ece4dc;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .menu-card:last-child {
+      border-bottom: none;
+    }
+
+    .menu-card-img {
+      width: 190px;
+      height: 130px;
+      border-radius: 12px;
+      object-fit: cover;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      background: #fbf5e6;
+    }
+
+    .menu-card-body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 130px;
+    }
+
+    .menu-card-name {
+      font-size: 19px;
+      font-weight: 700;
+      color: #23120b;
+      margin-bottom: 8px;
+      line-height: 1.25;
+    }
+
+    .menu-card-desc {
+      font-size: 13.5px;
+      color: #555555;
+      line-height: 1.5;
+      margin-bottom: 16px;
+      text-align: justify;
+    }
+
+    .menu-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+    }
+
+    .menu-card-price {
+      font-size: 15px;
+      font-weight: 600;
+      color: #333333;
+    }
+
+    .btn-add-cart {
+      border: 1.5px solid #23120b;
+      border-radius: 9999px;
+      background: #ffffff;
+      color: #23120b;
+      font-size: 13.5px;
+      font-weight: 600;
+      padding: 7px 26px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .btn-add-cart:hover {
+      background: #23120b;
+      color: #ffffff;
+    }
+
+    .unavailable-tag {
+      font-size: 12px;
+      color: #888888;
+      font-style: italic;
+    }
+
+    /* Loading & Empty states */
+    .loading-state, .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #7b4a1e;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(123, 74, 30, 0.2);
+      border-top-color: #7b4a1e;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Toast notification */
+    #products-toast {
+      position: fixed;
+      bottom: 90px;
+      right: 28px;
+      background: #23120b;
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+      z-index: 1001;
+      pointer-events: none;
+    }
+
+    #products-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- ═══════════════════ NAVBAR ═══════════════════ -->
+  <nav class="navbar">
+    <span class="navbar-logo">Coffee Shop</span>
+    <div class="navbar-links">
+      <a href="products.html" class="active">Products</a>
+      <a href="cart.html" class="cart-badge">
+        Checkout
+        <span class="badge" id="cart-count">0</span>
+      </a>
+    </div>
+  </nav>
+  <div class="nav-divider"></div>
+
+  <!-- ═══════════════════ MAIN CONTENT (SCROLLABLE) ═══════════════════ -->
+  <main class="main-content">
+    <div class="products-page">
+
+      <!-- Menu list (Langsung list kartu menu tanpa pill kategori di atas) -->
+      <div id="menu-list" class="menu-list">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          Memuat menu...
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ═══════════════════ FOOTER ═══════════════════ -->
+  <footer class="footer">
+    <div class="footer-brand">
+      <span class="footer-brand-logo">Coffee Shop</span>
+      <span class="footer-brand-tagline">one Stop | one Heart | one Cup</span>
+    </div>
+    <div class="footer-links">
+      <a href="home.html" class="footer-pill" id="footer-btn-company">our Company</a>
+      <a href="products.html?type=coffee" class="footer-pill" id="footer-btn-coffee" onclick="switchCategory(event, 'coffee')">our Coffee</a>
+      <a href="products.html?type=pastry" class="footer-pill" id="footer-btn-pastry" onclick="switchCategory(event, 'pastry')">our Pastry</a>
+    </div>
+    <div class="footer-copy">@ 2023 All Rights Reserved</div>
+  </footer>
+
+</div>
+
+<!-- Toast element -->
+<div id="products-toast"></div>
+
+<!-- ═══════════════════ SCRIPTS ═══════════════════ -->
+<script type="module">
+  import { getMenu } from '../api.js';
+  import { addToCart, getCartCount, formatRupiah } from '../cart.js';
+
+  /* Guard check login */
+  if (!localStorage.getItem('etacafe_user')) location.href = 'login.html';
+
+  window.addItem = addItem;
+  window.openDetail = openDetail;
+  window.switchCategory = switchCategory;
+
+  let allMenuItems = [];
+  let currentType = 'coffee'; // 'coffee' | 'pastry'
+
+  /* Check initial type from URL */
+  const urlParams = new URLSearchParams(window.location.search);
+  const typeParam = urlParams.get('type');
+  if (typeParam === 'pastry') {
+    currentType = 'pastry';
+  } else {
+    currentType = 'coffee';
+  }
+
+  updateBadge();
+  updateFooterPills();
+  loadAllMenu();
+
+  function updateBadge() {
+    const el = document.getElementById('cart-count');
+    if (el) el.textContent = getCartCount();
+  }
+
+  function updateFooterPills() {
+    const btnCompany = document.getElementById('footer-btn-company');
+    const btnCoffee  = document.getElementById('footer-btn-coffee');
+    const btnPastry  = document.getElementById('footer-btn-pastry');
+
+    btnCompany.classList.remove('active');
+    btnCoffee.classList.remove('active');
+    btnPastry.classList.remove('active');
+
+    if (currentType === 'pastry') {
+      btnPastry.classList.add('active');
+    } else {
+      btnCoffee.classList.add('active');
+    }
+  }
+
+  function switchCategory(event, type) {
+    if (event) event.preventDefault();
+    currentType = type;
+    history.pushState(null, '', `products.html?type=${type}`);
+    updateFooterPills();
+    renderFilteredMenu();
+  }
+
+  async function loadAllMenu() {
+    const container = document.getElementById('menu-list');
+    container.innerHTML = `<div class="loading-state"><div class="spinner"></div>Memuat menu...</div>`;
+
+    try {
+      allMenuItems = await getMenu();
+      renderFilteredMenu();
+    } catch (e) {
+      /* Fallback mock jika backend ada kendala */
+      allMenuItems = [
+        {
+          id: 1,
+          name: 'Eta Signature Kopi Aren',
+          category_id: 1,
+          price: 18000,
+          description: 'Espresso double shot dipadukan susu segar creamy dan gula aren organik khas EtaCafe.',
+          image_url: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=600',
+          is_available: true
+        },
+        {
+          id: 2,
+          name: 'Vanilla Caramel Macchiato',
+          category_id: 1,
+          price: 24000,
+          description: 'Sirup vanila lembut, steamed milk, shot espresso pekat dengan saus karamel manis.',
+          image_url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600',
+          is_available: true
+        },
+        {
+          id: 3,
+          name: 'Matcha Green Tea Latte',
+          category_id: 1,
+          price: 22000,
+          description: 'Matcha Uji Jepang premium dipadukan susu hangat atau dingin menyegarkan.',
+          image_url: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600',
+          is_available: true
+        },
+        {
+          id: 8,
+          name: 'Tahu Lada Garam Crispy',
+          category_id: 3,
+          price: 16000,
+          description: 'Tahu sutra dipotong dadu digoreng garing dengan tumisan bawang putih dan irisan cabe rawit.',
+          image_url: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600',
+          is_available: true
+        },
+        {
+          id: 9,
+          name: 'French Fries Truffle Herb',
+          category_id: 3,
+          price: 20000,
+          description: 'Kentang goreng renyah bumbu truffle aromatik dan taburan keju parmesan.',
+          image_url: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=600',
+          is_available: true
+        },
+        {
+          id: 10,
+          name: 'Croffle Choco Almond',
+          category_id: 4,
+          price: 22000,
+          description: 'Croissant waffle renyah berlapis saus dark cokelat Belgia dan kacang almond panggang.',
+          image_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600',
+          is_available: true
+        }
+      ];
+      renderFilteredMenu();
+    }
+  }
+
+  function renderFilteredMenu() {
+    const container = document.getElementById('menu-list');
+
+    let filtered = [];
+    if (currentType === 'pastry') {
+      // Pastry / Camilan / Makanan (kategori selain kopi/minuman)
+      filtered = allMenuItems.filter(item => {
+        const catId = item.category_id || (item.category_rel ? item.category_rel.id : null);
+        return catId !== 1;
+      });
+      // Fallback jika tidak ada kategori, cari berdasarkan nama makanan/pastry
+      if (!filtered.length) {
+        filtered = allMenuItems.filter(item => !item.name.toLowerCase().includes('kopi') && !item.name.toLowerCase().includes('latte'));
+      }
+    } else {
+      // Coffee & Drinks (kategori 1)
+      filtered = allMenuItems.filter(item => {
+        const catId = item.category_id || (item.category_rel ? item.category_rel.id : null);
+        return catId === 1 || catId == null;
+      });
+      if (!filtered.length) {
+        filtered = allMenuItems;
+      }
+    }
+
+    if (!filtered.length) {
+      container.innerHTML = `<div class="empty-state">😔 Tidak ada menu untuk kategori ini.</div>`;
+      return;
+    }
+
+    container.innerHTML = filtered.map(item => renderMenuCard(item)).join('');
+  }
+
+  function renderMenuCard(item) {
+    const price = formatRupiah(item.price);
+    const imgFallback = 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400';
+    const imgSrc = item.image_url || imgFallback;
+    const available = item.is_available !== false;
+
+    return `
+      <div class="menu-card" onclick="openDetail(${item.id})">
+        <img
+          class="menu-card-img"
+          src="${imgSrc}"
+          alt="${item.name}"
+          onerror="this.src='${imgFallback}'"
+        />
+        <div class="menu-card-body">
+          <div>
+            <div class="menu-card-name">${item.name}</div>
+            <div class="menu-card-desc">${item.description || ''}</div>
+          </div>
+          <div class="menu-card-footer">
+            <span class="menu-card-price">${price}</span>
+            ${available
+              ? `<button class="btn-add-cart" onclick="addItem(event, ${item.id}, '${escapeQuotes(JSON.stringify(item))}')">Add to Cart</button>`
+              : `<span class="unavailable-tag">Tidak Tersedia</span>`
+            }
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function escapeQuotes(str) {
+    return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  }
+
+  function addItem(e, id, itemJson) {
+    e.stopPropagation();
+    try {
+      const item = JSON.parse(itemJson.replace(/&quot;/g, '"'));
+      addToCart(item);
+      updateBadge();
+      showToast(`✓ ${item.name} ditambahkan ke keranjang`);
+    } catch {}
+  }
+
+  function openDetail(id) {
+    location.href = `detail.html?id=${id}`;
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const toast = document.getElementById('products-toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2200);
+  }
+</script>
+
+</body>
+</html>

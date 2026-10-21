@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<!--
+  PAGE: Product Detail
+  FILE: frontend-pelanggan/pages/detail.html
+  - Hero image mengisi PENUH area tengah antara navbar & footer
+  - Overlay gradient bawah dengan nama, deskripsi, harga, qty, tombol
+  - Footer tetap dengan 3 tombol navigasi
+-->
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EtaCafe — Detail Menu</title>
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    /* Override main-content: no scroll, hero is absolute */
+    .main-content {
+      overflow: hidden;
+      padding: 0;
+      position: relative;
+    }
+
+    /* ── Hero Full-Height using absolute fill ── */
+    .detail-hero-full {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .detail-hero-full .hero-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+
+    /* Gradient overlay dari bawah */
+    .detail-hero-full .hero-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background: linear-gradient(
+        to top,
+        rgba(20, 8, 2, 0.92) 0%,
+        rgba(20, 8, 2, 0.65) 30%,
+        rgba(20, 8, 2, 0.2) 60%,
+        rgba(20, 8, 2, 0.0) 100%
+      );
+      display: flex;
+      align-items: flex-end;
+      padding: 40px 52px;
+      justify-content: space-between;
+      gap: 32px;
+    }
+
+    /* Kiri: nama + deskripsi */
+    .hero-info-left {
+      flex: 1;
+      max-width: 55%;
+    }
+
+    .hero-product-name {
+      font-size: clamp(26px, 3.5vw, 42px);
+      font-weight: 900;
+      color: #f5e6d0;
+      margin-bottom: 12px;
+      line-height: 1.15;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    }
+
+    .hero-product-desc {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.82);
+      line-height: 1.65;
+      text-align: justify;
+      max-width: 520px;
+    }
+
+    /* Kanan: harga + qty + tombol */
+    .hero-info-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 18px;
+      flex-shrink: 0;
+    }
+
+    .hero-price {
+      font-size: clamp(28px, 3vw, 40px);
+      font-weight: 900;
+      color: #f5c87a;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    }
+
+    /* Qty control */
+    .qty-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: rgba(255,255,255,0.12);
+      border: 1.5px solid rgba(255,255,255,0.35);
+      border-radius: 50px;
+      overflow: hidden;
+    }
+
+    .qty-btn {
+      background: transparent;
+      border: none;
+      color: #fff;
+      width: 42px;
+      height: 42px;
+      font-size: 22px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .qty-btn:hover {
+      background: rgba(255,255,255,0.18);
+    }
+
+    .qty-num {
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      min-width: 36px;
+      text-align: center;
+    }
+
+    /* Add to Cart button */
+    .btn-add-to-cart {
+      background: #7b4a1e;
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 13px 34px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      letter-spacing: 0.3px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    .btn-add-to-cart:hover {
+      background: #5c3317;
+      transform: translateY(-2px);
+    }
+
+    .btn-add-to-cart:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Loading state */
+    .loading-state {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--brown-mid);
+      font-size: 15px;
+      font-weight: 600;
+      gap: 16px;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(123, 74, 30, 0.2);
+      border-top-color: #7b4a1e;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Error state */
+    .error-state {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-mid);
+      font-size: 16px;
+      gap: 16px;
+    }
+
+    /* Unavailable badge */
+    .unavail-badge {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(192, 57, 43, 0.9);
+      color: #fff;
+      border-radius: 50px;
+      padding: 8px 24px;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+      backdrop-filter: blur(4px);
+      z-index: 10;
+      display: none;
+    }
+
+    /* Back button overlay */
+    .btn-back-overlay {
+      position: absolute;
+      top: 16px;
+      left: 20px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(6px);
+      border: 1.5px solid rgba(255,255,255,0.4);
+      color: #fff;
+      border-radius: 50px;
+      padding: 7px 20px 7px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+      z-index: 10;
+    }
+
+    .btn-back-overlay:hover {
+      background: rgba(255,255,255,0.28);
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- ═══════════════════ NAVBAR ═══════════════════ -->
+  <nav class="navbar">
+    <span class="navbar-logo">Coffee Shop</span>
+    <div class="navbar-links">
+      <a href="products.html" id="nav-products">Products</a>
+      <a href="cart.html" class="cart-badge">
+        Checkout
+        <span class="badge" id="cart-count">0</span>
+      </a>
+    </div>
+  </nav>
+  <div class="nav-divider"></div>
+
+  <!-- ═══════════════════ MAIN: HERO PENUH ═══════════════════ -->
+  <main class="main-content">
+
+    <!-- Loading -->
+    <div id="loading" class="loading-state">
+      <div class="spinner"></div>
+      Memuat detail menu...
+    </div>
+
+    <!-- Error -->
+    <div id="error-state" class="error-state" style="display:none;">
+      <span style="font-size:40px;">😔</span>
+      Menu tidak ditemukan.
+      <a href="products.html" style="color:var(--brown-mid);font-weight:700;">← Kembali ke Menu</a>
+    </div>
+
+    <!-- Detail Content -->
+    <div id="detail-content" class="detail-hero-full" style="display:none;">
+
+      <!-- Back button -->
+      <a href="javascript:history.back()" class="btn-back-overlay">
+        ← Kembali
+      </a>
+
+      <!-- Unavailable badge -->
+      <div class="unavail-badge" id="unavail-badge">⚠️ Sedang Tidak Tersedia</div>
+
+      <!-- Hero image -->
+      <img id="detail-img" class="hero-img" src="" alt="" />
+
+      <!-- Overlay dengan info -->
+      <div class="hero-overlay">
+        <!-- Kiri -->
+        <div class="hero-info-left">
+          <div class="hero-product-name" id="detail-name"></div>
+          <div class="hero-product-desc" id="detail-desc"></div>
+        </div>
+
+        <!-- Kanan -->
+        <div class="hero-info-right">
+          <div class="hero-price" id="detail-price"></div>
+
+          <div class="qty-row">
+            <button class="qty-btn" id="btn-minus" onclick="changeQty(-1)">−</button>
+            <div class="qty-num" id="qty-display">1</div>
+            <button class="qty-btn" id="btn-plus" onclick="changeQty(1)">+</button>
+          </div>
+
+          <button class="btn-add-to-cart" id="add-btn" onclick="addItemToCart()">
+            🛒 Add to Cart
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ═══════════════════ FOOTER ═══════════════════ -->
+  <footer class="footer">
+    <div class="footer-brand">
+      <span class="footer-brand-logo">Coffee Shop</span>
+      <span class="footer-brand-tagline">one Stop | one Heart | one Cup</span>
+    </div>
+    <div class="footer-links">
+      <a href="home.html" class="footer-pill" id="footer-btn-company">our Company</a>
+      <a href="products.html?type=coffee" class="footer-pill" id="footer-btn-coffee">our Coffee</a>
+      <a href="products.html?type=pastry" class="footer-pill" id="footer-btn-pastry">our Pastry</a>
+    </div>
+    <div class="footer-copy">@ 2023 All Rights Reserved</div>
+  </footer>
+
+</div><!-- /page-wrapper -->
+
+<script type="module">
+  import { getMenuDetail } from '../api.js';
+  import { addToCart, getCartCount, formatRupiah } from '../cart.js';
+
+  /* Guard */
+  if (!localStorage.getItem('etacafe_user')) location.href = 'login.html';
+
+  window.changeQty    = changeQty;
+  window.addItemToCart = addItemToCart;
+
+  let qty = 1;
+  let currentItem = null;
+
+  /* Cart badge */
+  document.getElementById('cart-count').textContent = getCartCount();
+
+  /* Get menu ID from URL */
+  const params = new URLSearchParams(location.search);
+  const menuId = params.get('id');
+  if (!menuId) showError();
+  else init();
+
+  async function init() {
+    try {
+      const item = await getMenuDetail(menuId);
+      currentItem = item;
+      renderDetail(item);
+    } catch {
+      showError();
+    }
+  }
+
+  function renderDetail(item) {
+    const imgFallback = 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1600&q=90';
+    const imgEl = document.getElementById('detail-img');
+    imgEl.src   = item.image_url || imgFallback;
+    imgEl.alt   = item.name;
+    imgEl.onerror = () => { imgEl.src = imgFallback; };
+
+    document.getElementById('detail-name').textContent  = item.name;
+    document.getElementById('detail-desc').textContent  = item.description || '';
+    document.getElementById('detail-price').textContent = formatRupiah(item.price);
+    document.title = `EtaCafe — ${item.name}`;
+
+    document.getElementById('loading').style.display        = 'none';
+    document.getElementById('detail-content').style.display = '';
+
+    if (!item.is_available) {
+      document.getElementById('unavail-badge').style.display = '';
+      const addBtn  = document.getElementById('add-btn');
+      const minBtn  = document.getElementById('btn-minus');
+      const plusBtn = document.getElementById('btn-plus');
+      addBtn.disabled  = true;
+      minBtn.disabled  = true;
+      plusBtn.disabled = true;
+    }
+  }
+
+  function changeQty(delta) {
+    qty = Math.max(1, qty + delta);
+    document.getElementById('qty-display').textContent = qty;
+  }
+
+  function addItemToCart() {
+    if (!currentItem || !currentItem.is_available) return;
+    for (let i = 0; i < qty; i++) addToCart(currentItem);
+    document.getElementById('cart-count').textContent = getCartCount();
+    showToast(`✓ ${qty}× ${currentItem.name} ditambahkan!`);
+    qty = 1;
+    document.getElementById('qty-display').textContent = 1;
+  }
+
+  function showError() {
+    document.getElementById('loading').style.display    = 'none';
+    document.getElementById('error-state').style.display = '';
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    let toast = document.getElementById('detail-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'detail-toast';
+      Object.assign(toast.style, {
+        position: 'fixed', bottom: '90px', right: '28px',
+        background: '#23120b', color: '#fff',
+        padding: '12px 24px', borderRadius: '50px',
+        fontSize: '14px', fontWeight: '600',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+        zIndex: '999', transition: 'opacity 0.3s, transform 0.3s',
+        opacity: '0', transform: 'translateY(10px)',
+      });
+      document.body.appendChild(toast);
+    }
+    toast.textContent  = msg;
+    toast.style.opacity   = '1';
+    toast.style.transform = 'translateY(0)';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toast.style.opacity   = '0';
+      toast.style.transform = 'translateY(10px)';
+    }, 2300);
+  }
+</script>
+
+</body>
+</html>

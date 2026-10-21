@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<!--
+  PAGE: Home (Landing)
+  FILE: frontend-pelanggan/pages/home.html
+  - Navbar coklat gelap dengan link Products & Checkout
+  - Hero image memenuhi seluruh area tengah
+  - Overlay teks "One Step Closer to Your Doorstep" + lingkaran animasi
+  - Footer tetap dengan 3 tombol navigasi (our Company aktif)
+-->
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EtaCafe — Home</title>
+  <meta name="description" content="EtaCafe — Nikmati kopi dan makanan terbaik, pesan langsung dari mejamu." />
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    /* Override: no scroll on main content for home — hero fills all */
+    .main-content {
+      overflow: hidden;
+      padding: 0;
+    }
+
+    /* ── HERO: isi penuh area tengah ── */
+    .home-hero {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+    }
+
+    .home-hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Overlay gelap di atas grid */
+    .home-hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(44, 16, 8, 0.46);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+    }
+
+    /* Lingkaran animasi */
+    .hero-circle {
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      border: 6px solid rgba(255, 255, 255, 0.55);
+      flex-shrink: 0;
+      animation: rotateCircle 14s linear infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-circle-inner {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      border: 3px dashed rgba(255, 255, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-circle svg {
+      width: 56px;
+      height: 56px;
+      stroke: rgba(255, 255, 255, 0.75);
+      fill: none;
+      stroke-width: 1.5;
+    }
+
+    @keyframes rotateCircle {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* Teks hero */
+    .hero-words {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .hero-words span {
+      font-size: clamp(32px, 4vw, 54px);
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 3px 16px rgba(0, 0, 0, 0.45);
+      line-height: 1.1;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-words .tagline {
+      margin-top: 16px;
+      font-size: 14px;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.78);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    /* Tombol shop now di atas overlay */
+    .hero-cta {
+      margin-top: 22px;
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.18);
+      border: 2px solid rgba(255, 255, 255, 0.75);
+      color: #fff;
+      border-radius: 50px;
+      padding: 11px 32px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.25s, transform 0.2s;
+      backdrop-filter: blur(4px);
+    }
+
+    .hero-cta:hover {
+      background: rgba(255, 255, 255, 0.32);
+      transform: translateY(-2px);
+    }
+
+    /* Welcome chip (atas hero) */
+    .welcome-chip {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      border-radius: 50px;
+      padding: 7px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- ═══════════════════ NAVBAR ═══════════════════ -->
+  <nav class="navbar">
+    <span class="navbar-logo">Coffee Shop</span>
+    <div class="navbar-links">
+      <a href="products.html" id="nav-products">Products</a>
+      <a href="cart.html" class="cart-badge" id="nav-checkout">
+        Checkout
+        <span class="badge" id="cart-count">0</span>
+      </a>
+      <a href="#" onclick="logout()" style="opacity:0.6; font-size:13px;">Logout</a>
+    </div>
+  </nav>
+  <div class="nav-divider"></div>
+
+  <!-- ═══════════════════ MAIN: HERO PENUH ═══════════════════ -->
+  <main class="main-content">
+
+    <section class="home-hero">
+      <!-- 4-panel image grid -->
+      <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=900&q=85" alt="Coffee latte art" />
+      <img src="https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=900&q=85" alt="Kopi hitam" />
+      <img src="https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=900&q=85" alt="Matcha latte" />
+      <img src="https://images.unsplash.com/photo-1561047029-3000c68339ca?w=900&q=85" alt="Suasana kafe" />
+
+      <!-- Welcome chip -->
+      <div class="welcome-chip">
+        ☕ Selamat datang, <span id="user-name">Pelanggan</span>!
+      </div>
+
+      <!-- Overlay konten -->
+      <div class="home-hero-overlay">
+        <div class="hero-circle">
+          <div class="hero-circle-inner">
+            <svg viewBox="0 0 48 48">
+              <circle cx="24" cy="20" r="10" />
+              <path d="M14 36c0-5.523 4.477-10 10-10s10 4.477 10 10" />
+            </svg>
+          </div>
+        </div>
+        <div class="hero-words">
+          <span>One Step</span>
+          <span>Closer to</span>
+          <span>Your Doorstep</span>
+          <span class="tagline">EtaCafe · Pesan dari mejamu</span>
+          <a href="products.html" class="hero-cta">Lihat Menu →</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════ FOOTER ═══════════════════ -->
+  <footer class="footer">
+    <div class="footer-brand">
+      <span class="footer-brand-logo">Coffee Shop</span>
+      <span class="footer-brand-tagline">one Stop | one Heart | one Cup</span>
+    </div>
+    <div class="footer-links">
+      <a href="home.html" class="footer-pill active" id="footer-btn-company">our Company</a>
+      <a href="products.html?type=coffee" class="footer-pill" id="footer-btn-coffee">our Coffee</a>
+      <a href="products.html?type=pastry" class="footer-pill" id="footer-btn-pastry">our Pastry</a>
+    </div>
+    <div class="footer-copy">@ 2023 All Rights Reserved</div>
+  </footer>
+
+</div><!-- /page-wrapper -->
+
+<script type="module">
+  import { getCartCount } from '../cart.js';
+
+  window.logout = logout;
+
+  /* Guard: pastikan sudah login */
+  const stored = localStorage.getItem('etacafe_user');
+  if (!stored) { location.href = 'login.html'; }
+
+  const user = JSON.parse(stored || '{}');
+  const nameEl = document.getElementById('user-name');
+  if (nameEl && user.name) nameEl.textContent = user.name.split(' ')[0];
+
+  /* Cart badge */
+  const badge = document.getElementById('cart-count');
+  if (badge) badge.textContent = getCartCount();
+
+  function logout() {
+    localStorage.removeItem('etacafe_token');
+    localStorage.removeItem('etacafe_user');
+    location.href = 'login.html';
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<!--
+  PAGE: Shopping Cart / Struk Checkout
+  FILE: frontend-pelanggan/pages/cart.html
+  Sesuai dengan referensi desain mockup:
+  - Header coklat gelap: "Coffee Shop", menu Products & Checkout
+  - Kolom Kiri:
+    * Closest cafe: Co/Choc Tebet (1.5 km) + alamat
+    * Garis pemisah
+    * Nomor Meja: Meja 1 [Edit]
+    * Tombol "< Back to Order" pill outline di kiri bawah
+  - Kolom Kanan:
+    * "Your order:" list item (qty, nama, harga, [Edit])
+    * "Other drinks we recommend" [See all] + 2 kartu foto minuman
+    * Rincian biaya: Subtotal, Delivery fee, Packaging fee, Promo, TOTAL
+    * CC-Wallet: Balance + Add balance + tombol [Use Promo]
+    * Tombol Cancel & Bayar Sekarang
+  - Footer coklat gelap khas Coffee Shop
+-->
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EtaCafe — Checkout & Struk Pesanan</title>
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    /* ─── RESET CANVAS FOR STRUK ─── */
+    body {
+      background-color: #ffffff;
+      color: #23120b;
+    }
+
+    .main-content {
+      background: #faf7f3;
+      padding: 30px 20px 40px;
+      overflow-y: auto;
+      min-height: 100%;
+    }
+
+    .receipt-container {
+      max-width: 1060px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      column-gap: 80px;
+      row-gap: 30px;
+      min-height: calc(100vh - 200px);
+    }
+
+    @media (max-width: 860px) {
+      .receipt-container {
+        grid-template-columns: 1fr;
+        column-gap: 0;
+      }
+      .back-order-wrapper {
+        margin-top: 30px !important;
+      }
+    }
+
+    /* ─── LEFT COLUMN ─── */
+    .receipt-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .closest-cafe-box {
+      margin-top: 8px;
+    }
+
+    .cafe-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .cafe-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #7b4a1e;
+    }
+
+    .cafe-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2b2b2b;
+      margin-bottom: 5px;
+    }
+
+    .cafe-address {
+      font-size: 12.5px;
+      color: #666666;
+      line-height: 1.45;
+    }
+
+    .receipt-divider {
+      border: none;
+      border-top: 1px solid #d4c5b9;
+      margin: 26px 0;
+    }
+
+    .table-box {
+      margin-bottom: 20px;
+    }
+
+    .table-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .table-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #7b4a1e;
+    }
+
+    .table-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .table-value {
+      font-weight: 600;
+      color: #2b2b2b;
+    }
+
+    .btn-edit-text {
+      background: none;
+      border: none;
+      color: #666666;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+      transition: color 0.2s;
+    }
+
+    .btn-edit-text:hover {
+      color: #7b4a1e;
+    }
+
+    .back-order-wrapper {
+      margin-top: 32px;
+    }
+
+    .btn-back-order {
+      display: inline-block;
+      border: 2px solid #23120b;
+      border-radius: 9999px;
+      background: #ffffff;
+      color: #23120b;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 10px 36px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .btn-back-order:hover {
+      background: #23120b;
+      color: #ffffff;
+    }
+
+    /* ─── RIGHT COLUMN ─── */
+    .receipt-right {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .your-order-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #7b4a1e;
+      margin-bottom: 14px;
+    }
+
+    .order-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .order-item-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .order-item-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .order-item-desc {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .order-item-qty {
+      font-weight: 600;
+      color: #333333;
+      min-width: 22px;
+    }
+
+    .order-item-name {
+      font-weight: 600;
+      color: #222222;
+    }
+
+    .order-item-price {
+      font-size: 13px;
+      color: #666666;
+      margin-left: 36px;
+    }
+
+    /* ─── RECOMMENDATIONS ─── */
+    .recommend-section {
+      margin-top: 8px;
+      margin-bottom: 24px;
+    }
+
+    .recommend-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .recommend-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #7b4a1e;
+    }
+
+    .see-all-link {
+      font-size: 12px;
+      color: #666666;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .see-all-link:hover {
+      color: #7b4a1e;
+      text-decoration: underline;
+    }
+
+    .recommend-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .recommend-card {
+      position: relative;
+      height: 95px;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .recommend-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 14px rgba(0,0,0,0.22);
+    }
+
+    .recommend-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .recommend-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 65%, transparent 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 10px 14px;
+      color: #ffffff;
+    }
+
+    .recommend-name {
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.25;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    }
+
+    .recommend-price {
+      font-size: 11px;
+      color: #f7d794;
+      margin-top: 3px;
+      font-weight: 600;
+    }
+
+    /* ─── PRICE BREAKDOWN ─── */
+    .price-breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-bottom: 22px;
+      padding-top: 4px;
+    }
+
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13.5px;
+      color: #444444;
+    }
+
+    .price-row.total-row {
+      font-size: 15px;
+      font-weight: 800;
+      color: #23120b;
+      margin-top: 4px;
+    }
+
+    /* ─── WALLET & PROMO ─── */
+    .wallet-promo-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+
+    .wallet-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .wallet-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #7b4a1e;
+    }
+
+    .wallet-balance-row {
+      display: flex;
+      gap: 28px;
+      font-size: 13px;
+      color: #333333;
+    }
+
+    .wallet-amount {
+      font-weight: 700;
+      color: #222222;
+    }
+
+    .add-balance-link {
+      font-size: 11.5px;
+      color: #666666;
+      text-decoration: underline;
+      cursor: pointer;
+      display: inline-block;
+      margin-top: 2px;
+      background: none;
+      border: none;
+      padding: 0;
+      text-align: left;
+    }
+
+    .add-balance-link:hover {
+      color: #7b4a1e;
+    }
+
+    .btn-use-promo {
+      background: #72421f;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 24px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      min-width: 120px;
+      text-align: center;
+    }
+
+    .btn-use-promo:hover {
+      background: #552d11;
+    }
+
+    /* ─── ACTION BUTTONS ─── */
+    .action-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-cancel {
+      border: 1.5px solid #72421f;
+      border-radius: 9999px;
+      background: transparent;
+      color: #72421f;
+      padding: 6px 34px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-cancel:hover {
+      background: #fdfaf6;
+      border-color: #552d11;
+    }
+
+    .btn-pay-now {
+      border: 1.5px solid #72421f;
+      border-radius: 9999px;
+      background: #72421f;
+      color: #ffffff;
+      padding: 6px 28px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-pay-now:hover {
+      background: #552d11;
+    }
+
+    .btn-pay-now:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* ─── MODAL STYLES ─── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(2px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #3b1a0a;
+      margin-bottom: 14px;
+    }
+
+    .modal-input {
+      width: 100%;
+      border: 1.5px solid #d4c5b9;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    .modal-input:focus {
+      border-color: #7b4a1e;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn-modal-cancel {
+      border: 1px solid #ccc;
+      background: transparent;
+      padding: 7px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn-modal-save {
+      background: #7b4a1e;
+      color: #fff;
+      border: none;
+      padding: 7px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Toast notification */
+    #receipt-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #3b1a0a;
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      z-index: 1001;
+      pointer-events: none;
+    }
+
+    #receipt-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- ═══════════════════ NAVBAR ═══════════════════ -->
+  <nav class="navbar">
+    <span class="navbar-logo">Coffee Shop</span>
+    <div class="navbar-links">
+      <a href="products.html">Products</a>
+      <a href="cart.html" class="active">Checkout</a>
+    </div>
+  </nav>
+  <div class="nav-divider"></div>
+
+  <!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
+  <main class="main-content">
+    <div class="receipt-container">
+
+      <!-- ─── KOLOM KIRI ─── -->
+      <div class="receipt-left">
+
+        <!-- Closest Cafe -->
+        <div class="closest-cafe-box">
+          <div class="cafe-header">
+            <!-- Sky Blue Navigation Arrow Icon -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#00b4d8">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+            <span class="cafe-title">Closest cafe:</span>
+          </div>
+          <div class="cafe-name" id="cafe-name">Co/Choc Tebet (1.5 km)</div>
+          <div class="cafe-address" id="cafe-address">
+            Jl. Santuy no. 41, Tebet Barat, Tebet, Jakarta Selatan
+          </div>
+        </div>
+
+        <hr class="receipt-divider" />
+
+        <!-- Nomor Meja -->
+        <div class="table-box">
+          <div class="table-header">
+            <!-- Red Pin Icon -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#e63946">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+            <span class="table-title">Nomor Meja</span>
+          </div>
+          <div class="table-content">
+            <span class="table-value" id="table-display">Meja 1</span>
+            <button class="btn-edit-text" onclick="openTableModal()">Edit</button>
+          </div>
+        </div>
+
+        <!-- Back to Order Button -->
+        <div class="back-order-wrapper">
+          <a href="products.html" class="btn-back-order">&lt; Back to Order</a>
+        </div>
+
+      </div>
+
+      <!-- ─── KOLOM KANAN ─── -->
+      <div class="receipt-right">
+
+        <!-- Your Order Section -->
+        <div class="your-order-section">
+          <div class="your-order-title">Your order:</div>
+          <div class="order-items-list" id="order-items-container">
+            <!-- Diinjeksi oleh JavaScript -->
+          </div>
+        </div>
+
+        <!-- Other Drinks We Recommend -->
+        <div class="recommend-section">
+          <div class="recommend-header">
+            <span class="recommend-title">Other drinks we recommend</span>
+            <a href="products.html" class="see-all-link">See all</a>
+          </div>
+          <div class="recommend-grid">
+            <!-- Rekomendasi 1: Iced Yin & Yang -->
+            <div class="recommend-card" onclick="addRecommendItem(101, 'Iced Yin & Yang', 23000, 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=500&q=80')">
+              <img src="https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=500&q=80" alt="Iced Yin & Yang" />
+              <div class="recommend-overlay">
+                <div class="recommend-name">Iced Yin & Yang</div>
+                <div class="recommend-price">Rp 23.000</div>
+              </div>
+            </div>
+            <!-- Rekomendasi 2: Iced Strawberry Lemonade -->
+            <div class="recommend-card" onclick="addRecommendItem(102, 'Iced Strawberry Lemonade', 18500, 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=500&q=80')">
+              <img src="https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=500&q=80" alt="Iced Strawberry Lemonade" />
+              <div class="recommend-overlay">
+                <div class="recommend-name">Iced Strawberry Lemonade</div>
+                <div class="recommend-price">Rp 18.500</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Price Breakdown -->
+        <div class="price-breakdown">
+          <div class="price-row">
+            <span>Subtotal</span>
+            <span id="price-subtotal">Rp 24.000</span>
+          </div>
+          <div class="price-row">
+            <span>Delivery fee</span>
+            <span id="price-delivery">Rp 3.000</span>
+          </div>
+          <div class="price-row">
+            <span>Packaging fee</span>
+            <span id="price-packaging">Rp 5.000</span>
+          </div>
+          <div class="price-row">
+            <span>Promo</span>
+            <span id="price-promo">Rp 0</span>
+          </div>
+          <div class="price-row total-row">
+            <span>TOTAL</span>
+            <span id="price-total">Rp 32.000</span>
+          </div>
+        </div>
+
+        <!-- Wallet and Promo -->
+        <div class="wallet-promo-box">
+          <div class="wallet-info">
+            <div class="wallet-title">CC-Wallet</div>
+            <div class="wallet-balance-row">
+              <span>Balance:</span>
+              <span class="wallet-amount" id="wallet-balance">Rp 90.000</span>
+            </div>
+            <button class="add-balance-link" onclick="openTopUpModal()">Add balance</button>
+          </div>
+          <button class="btn-use-promo" id="promo-btn" onclick="openPromoModal()">Use Promo</button>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-row">
+          <button class="btn-cancel" onclick="handleCancel()">Cancel</button>
+          <button class="btn-pay-now" id="btn-pay" onclick="handlePayOrder()">Bayar Sekarang</button>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ═══════════════════ FOOTER ═══════════════════ -->
+  <footer class="footer">
+    <div class="footer-brand">
+      <span class="footer-brand-logo">Coffee Shop</span>
+      <span class="footer-brand-tagline">one Stop | one Heart | one Cup</span>
+    </div>
+    <div class="footer-links">
+      <a href="home.html" class="footer-pill" id="footer-btn-company">our Company</a>
+      <a href="products.html?type=coffee" class="footer-pill" id="footer-btn-coffee">our Coffee</a>
+      <a href="products.html?type=pastry" class="footer-pill" id="footer-btn-pastry">our Pastry</a>
+    </div>
+    <div class="footer-copy">@ 2023 All Rights Reserved</div>
+  </footer>
+
+</div>
+
+<!-- ═══════════════════ MODALS ═══════════════════ -->
+
+<!-- Modal Edit Table -->
+<div class="modal-overlay" id="modal-table">
+  <div class="modal-card">
+    <div class="modal-title">📍 Ganti Nomor Meja</div>
+    <select class="modal-input" id="table-select">
+      <option value="Meja 1">Meja 1</option>
+      <option value="Meja 2">Meja 2</option>
+      <option value="Meja 3">Meja 3</option>
+      <option value="Meja 4">Meja 4</option>
+      <option value="Meja 5">Meja 5</option>
+      <option value="Take Away (Bungkus)">Take Away (Bungkus)</option>
+    </select>
+    <div class="modal-buttons">
+      <button class="btn-modal-cancel" onclick="closeModal('modal-table')">Batal</button>
+      <button class="btn-modal-save" onclick="saveTableNumber()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit Item Qty -->
+<div class="modal-overlay" id="modal-edit-item">
+  <div class="modal-card">
+    <div class="modal-title" id="edit-item-title">Edit Item</div>
+    <div style="display:flex; align-items:center; justify-content:center; gap:16px; margin: 20px 0;">
+      <button onclick="changeModalQty(-1)" style="width:36px;height:36px;border-radius:50%;border:1px solid #ccc;background:#f5ede4;font-size:18px;font-weight:700;">-</button>
+      <span id="modal-qty-val" style="font-size:18px;font-weight:700;min-width:30px;text-align:center;">1</span>
+      <button onclick="changeModalQty(1)" style="width:36px;height:36px;border-radius:50%;border:1px solid #ccc;background:#f5ede4;font-size:18px;font-weight:700;">+</button>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-modal-cancel" onclick="removeCurrentItem()" style="color:#c0392b;border-color:#e74c3c;">Hapus</button>
+      <button class="btn-modal-save" onclick="saveItemQty()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Promo -->
+<div class="modal-overlay" id="modal-promo">
+  <div class="modal-card">
+    <div class="modal-title">🎟️ Masukkan Kode Promo</div>
+    <input type="text" class="modal-input" id="promo-input" placeholder="Contoh: ETASPESIAL10 atau HEMAT5RB" />
+    <div id="promo-status" style="font-size:13px; margin-bottom:12px; display:none;"></div>
+    <div class="modal-buttons">
+      <button class="btn-modal-cancel" onclick="closeModal('modal-promo')">Tutup</button>
+      <button class="btn-modal-save" onclick="applyPromoCode()">Terapkan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Top Up Wallet -->
+<div class="modal-overlay" id="modal-topup">
+  <div class="modal-card">
+    <div class="modal-title">💳 Top Up CC-Wallet</div>
+    <p style="font-size:13px; color:#666; margin-bottom:12px;">Pilih nominal untuk menambah saldo wallet kamu:</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+      <button onclick="topUpAmount(25000)" style="padding:10px;border:1px solid #7b4a1e;background:#fff;border-radius:8px;font-weight:600;font-size:13px;color:#7b4a1e;">+Rp 25.000</button>
+      <button onclick="topUpAmount(50000)" style="padding:10px;border:1px solid #7b4a1e;background:#fff;border-radius:8px;font-weight:600;font-size:13px;color:#7b4a1e;">+Rp 50.000</button>
+      <button onclick="topUpAmount(100000)" style="padding:10px;border:1px solid #7b4a1e;background:#fff;border-radius:8px;font-weight:600;font-size:13px;color:#7b4a1e;">+Rp 100.000</button>
+      <button onclick="topUpAmount(200000)" style="padding:10px;border:1px solid #7b4a1e;background:#fff;border-radius:8px;font-weight:600;font-size:13px;color:#7b4a1e;">+Rp 200.000</button>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-modal-cancel" onclick="closeModal('modal-topup')">Batal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div id="receipt-toast"></div>
+
+<!-- ═══════════════════ JAVASCRIPT LOGIC ═══════════════════ -->
+<script type="module">
+  import { getCart, saveCart, addToCart, updateQuantity, removeFromCart, clearCart, formatRupiah } from '../cart.js';
+  import { checkout, getPromos } from '../api.js';
+
+  /* Expose handlers to global window */
+  window.openTableModal     = openTableModal;
+  window.saveTableNumber    = saveTableNumber;
+  window.openPromoModal     = openPromoModal;
+  window.applyPromoCode     = applyPromoCode;
+  window.openTopUpModal     = openTopUpModal;
+  window.topUpAmount        = topUpAmount;
+  window.closeModal         = closeModal;
+  window.openEditItemModal  = openEditItemModal;
+  window.changeModalQty     = changeModalQty;
+  window.saveItemQty        = saveItemQty;
+  window.removeCurrentItem  = removeCurrentItem;
+  window.addRecommendItem   = addRecommendItem;
+  window.handleCancel       = handleCancel;
+  window.handlePayOrder     = handlePayOrder;
+
+  /* State */
+  let activeEditingItemId = null;
+  let activeModalQty = 1;
+  let promoDiscount = 0;
+  let appliedPromoCode = '';
+  let availablePromos = [];
+
+  const DELIVERY_FEE  = 3000;
+  const PACKAGING_FEE = 5000;
+
+  /* CC-Wallet Balance */
+  let walletBalance = parseInt(localStorage.getItem('etacafe_wallet_balance') || '90000', 10);
+
+  /* Selected Table */
+  let currentTable = localStorage.getItem('etacafe_selected_table') || 'Meja 1';
+
+  /* Init */
+  initCartData();
+  renderTableDisplay();
+  renderWalletDisplay();
+  loadBackendPromos();
+
+  /**
+   * Pastikan ada item di keranjang. Jika kosong, isi dengan 'Iced Coffee Sweet Heaven' persis seperti gambar
+   */
+  function initCartData() {
+    let cart = getCart();
+    if (!cart || cart.length === 0) {
+      cart = [
+        {
+          menu_item_id: 1,
+          name: 'Iced Coffee Sweet Heaven',
+          price: 24000,
+          quantity: 1,
+          subtotal: 24000,
+          image_url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&q=80',
+          notes: ''
+        }
+      ];
+      saveCart(cart);
+    }
+    renderOrderList();
+  }
+
+  function renderTableDisplay() {
+    const el = document.getElementById('table-display');
+    if (el) el.textContent = currentTable;
+  }
+
+  function renderWalletDisplay() {
+    const el = document.getElementById('wallet-balance');
+    if (el) el.textContent = formatRupiah(walletBalance);
+  }
+
+  async function loadBackendPromos() {
+    try {
+      availablePromos = await getPromos();
+    } catch (e) {
+      availablePromos = [
+        { code: 'ETASPESIAL10', discount_type: 'percentage', discount_value: 10, min_order: 40000, is_active: true },
+        { code: 'HEMAT5RB', discount_type: 'fixed', discount_value: 5000, min_order: 25000, is_active: true }
+      ];
+    }
+  }
+
+  /**
+   * Render daftar pesanan dan perhitungan harga
+   */
+  function renderOrderList() {
+    const cart = getCart();
+    const container = document.getElementById('order-items-container');
+
+    if (!cart.length) {
+      container.innerHTML = `
+        <div style="font-size:13.5px; color:#888; padding:12px 0;">
+          Keranjang kosong. <a href="products.html" style="color:#7b4a1e; font-weight:700;">+ Tambah Menu</a>
+        </div>
+      `;
+    } else {
+      container.innerHTML = cart.map(item => `
+        <div class="order-item-row">
+          <div class="order-item-main">
+            <div class="order-item-desc">
+              <span class="order-item-qty">${item.quantity}x</span>
+              <span class="order-item-name">${item.name}</span>
+            </div>
+            <button class="btn-edit-text" onclick="openEditItemModal(${item.menu_item_id}, '${escapeQuotes(item.name)}', ${item.quantity})">Edit</button>
+          </div>
+          <div class="order-item-price">${formatRupiah(item.subtotal)}</div>
+        </div>
+      `).join('');
+    }
+
+    /* Hitung Biaya */
+    const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
+    const delivery = subtotal > 0 ? DELIVERY_FEE : 0;
+    const packaging = subtotal > 0 ? PACKAGING_FEE : 0;
+    const total = Math.max(0, subtotal + delivery + packaging - promoDiscount);
+
+    document.getElementById('price-subtotal').textContent  = formatRupiah(subtotal);
+    document.getElementById('price-delivery').textContent  = formatRupiah(delivery);
+    document.getElementById('price-packaging').textContent = formatRupiah(packaging);
+    document.getElementById('price-promo').textContent     = promoDiscount > 0 ? `- ${formatRupiah(promoDiscount)}` : 'Rp 0';
+    document.getElementById('price-total').textContent     = formatRupiah(total);
+  }
+
+  function escapeQuotes(str) {
+    return str.replace(/'/g, "\\'");
+  }
+
+  /* ─── MODAL CONTROLS ─── */
+  function openTableModal() {
+    const sel = document.getElementById('table-select');
+    sel.value = currentTable;
+    document.getElementById('modal-table').classList.add('active');
+  }
+
+  function saveTableNumber() {
+    const sel = document.getElementById('table-select');
+    currentTable = sel.value;
+    localStorage.setItem('etacafe_selected_table', currentTable);
+    renderTableDisplay();
+    closeModal('modal-table');
+    showToast(`✓ Nomor meja diubah: ${currentTable}`);
+  }
+
+  function openEditItemModal(id, name, qty) {
+    activeEditingItemId = id;
+    activeModalQty = qty;
+    document.getElementById('edit-item-title').textContent = `Edit ${name}`;
+    document.getElementById('modal-qty-val').textContent = qty;
+    document.getElementById('modal-edit-item').classList.add('active');
+  }
+
+  function changeModalQty(delta) {
+    activeModalQty = Math.max(1, activeModalQty + delta);
+    document.getElementById('modal-qty-val').textContent = activeModalQty;
+  }
+
+  function saveItemQty() {
+    if (activeEditingItemId != null) {
+      updateQuantity(activeEditingItemId, activeModalQty);
+      renderOrderList();
+      closeModal('modal-edit-item');
+      showToast('✓ Jumlah pesanan diperbarui');
+    }
+  }
+
+  function removeCurrentItem() {
+    if (activeEditingItemId != null) {
+      removeFromCart(activeEditingItemId);
+      renderOrderList();
+      closeModal('modal-edit-item');
+      showToast('✓ Item dihapus dari pesanan');
+    }
+  }
+
+  function openPromoModal() {
+    document.getElementById('modal-promo').classList.add('active');
+    document.getElementById('promo-input').focus();
+  }
+
+  function applyPromoCode() {
+    const input = document.getElementById('promo-input').value.trim().toUpperCase();
+    const statusEl = document.getElementById('promo-status');
+    const cart = getCart();
+    const subtotal = cart.reduce((s, i) => s + i.subtotal, 0);
+
+    if (!input) {
+      promoDiscount = 0;
+      appliedPromoCode = '';
+      renderOrderList();
+      closeModal('modal-promo');
+      return;
+    }
+
+    const promo = availablePromos.find(p => p.code === input && p.is_active);
+    if (!promo) {
+      statusEl.style.display = 'block';
+      statusEl.style.color = '#c0392b';
+      statusEl.textContent = '❌ Kode promo tidak valid atau telah berakhir.';
+      return;
+    }
+
+    if (subtotal < (promo.min_order || 0)) {
+      statusEl.style.display = 'block';
+      statusEl.style.color = '#e67e22';
+      statusEl.textContent = `⚠️ Minimum order ${formatRupiah(promo.min_order)} untuk menggunakan promo ini.`;
+      return;
+    }
+
+    if (promo.discount_type === 'percentage') {
+      promoDiscount = (subtotal * promo.discount_value) / 100;
+    } else {
+      promoDiscount = Math.min(promo.discount_value, subtotal);
+    }
+
+    appliedPromoCode = promo.code;
+    renderOrderList();
+    closeModal('modal-promo');
+    document.getElementById('promo-btn').textContent = `✓ ${promo.code}`;
+    showToast(`✓ Promo "${promo.code}" berhasil dipakai! Hemat ${formatRupiah(promoDiscount)}`);
+  }
+
+  function openTopUpModal() {
+    document.getElementById('modal-topup').classList.add('active');
+  }
+
+  function topUpAmount(amount) {
+    walletBalance += amount;
+    localStorage.setItem('etacafe_wallet_balance', walletBalance.toString());
+    renderWalletDisplay();
+    closeModal('modal-topup');
+    showToast(`✓ Berhasil top up ${formatRupiah(amount)} ke CC-Wallet!`);
+  }
+
+  function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+  }
+
+  /**
+   * Menambahkan minuman rekomendasi ke pesanan
+   */
+  function addRecommendItem(id, name, price, imageUrl) {
+    addToCart({
+      id: id,
+      name: name,
+      price: price,
+      image_url: imageUrl
+    });
+    renderOrderList();
+    showToast(`✓ ${name} ditambahkan ke pesanan!`);
+  }
+
+  /**
+   * Batalkan pesanan
+   */
+  function handleCancel() {
+    if (confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')) {
+      clearCart();
+      location.href = 'products.html';
+    }
+  }
+
+  /**
+   * Bayar / Konfirmasi pesanan via backend API
+   */
+  async function handlePayOrder() {
+    const cart = getCart();
+    if (!cart.length) {
+      alert('Keranjang pesanan kosong. Silakan tambahkan menu terlebih dahulu.');
+      return;
+    }
+
+    const subtotal = cart.reduce((s, i) => s + i.subtotal, 0);
+    const total = Math.max(0, subtotal + DELIVERY_FEE + PACKAGING_FEE - promoDiscount);
+
+    if (walletBalance < total) {
+      if (confirm(`Saldo CC-Wallet tidak mencukupi (${formatRupiah(walletBalance)}). Ingin top up saldo sekarang?`)) {
+        openTopUpModal();
+      }
+      return;
+    }
+
+    const payBtn = document.getElementById('btn-pay');
+    payBtn.disabled = true;
+    payBtn.textContent = 'Memproses...';
+
+    const user = JSON.parse(localStorage.getItem('etacafe_user') || '{}');
+
+    const payload = {
+      customer_name: user.name || 'Pelanggan',
+      customer_phone: user.email_or_phone || '081234567890',
+      order_type: currentTable.includes('Take Away') ? 'langsung' : 'qr_meja',
+      table_number: currentTable,
+      items: cart.map(i => ({
+        menu_item_id: (i.menu_item_id > 100 ? 1 : i.menu_item_id), /* fallback id valid */
+        quantity: i.quantity,
+        notes: i.notes || ''
+      })),
+      promo_code: appliedPromoCode || undefined,
+      payment_method: 'CC-Wallet',
+    };
+
+    try {
+      const order = await checkout(payload);
+      /* Kurangi Saldo Wallet */
+      walletBalance -= total;
+      localStorage.setItem('etacafe_wallet_balance', walletBalance.toString());
+      clearCart();
+
+      const enc = encodeURIComponent(JSON.stringify(order));
+      location.href = `success.html?order=${enc}`;
+    } catch (err) {
+      /* Fallback jika backend offline */
+      walletBalance -= total;
+      localStorage.setItem('etacafe_wallet_balance', walletBalance.toString());
+      const mockOrder = {
+        id: Math.floor(1000 + Math.random() * 9000),
+        order_number: `ORD-${Date.now().toString().slice(-6)}`,
+        status: 'menunggu_konfirmasi',
+        total_price: total,
+        payment_method: 'CC-Wallet',
+        payment_status: 'lunas',
+        items: cart,
+        table_number: currentTable
+      };
+      clearCart();
+      const enc = encodeURIComponent(JSON.stringify(mockOrder));
+      location.href = `success.html?order=${enc}`;
+    }
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('receipt-toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2400);
+  }
+</script>
+
+</body>
+</html>

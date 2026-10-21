@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<!--
+  PAGE: Struk Pesanan Berhasil / Receipt
+  FILE: frontend-pelanggan/pages/success.html
+  Tampilan struk digital resmi setelah pembayaran/pemesanan berhasil
+-->
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EtaCafe — Struk Pesanan</title>
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    body {
+      background-color: #ffffff;
+      color: #23120b;
+    }
+
+    .main-content {
+      background: #ffffff;
+      padding: 30px 20px 60px;
+    }
+
+    .receipt-container {
+      max-width: 1060px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      column-gap: 80px;
+      row-gap: 30px;
+    }
+
+    @media (max-width: 860px) {
+      .receipt-container {
+        grid-template-columns: 1fr;
+        column-gap: 0;
+      }
+    }
+
+    /* ─── LEFT COLUMN ─── */
+    .receipt-left {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .status-alert-box {
+      background: #fbf5ee;
+      border-left: 4px solid #27ae60;
+      padding: 14px 18px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+
+    .status-alert-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1e8449;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-alert-num {
+      font-size: 13px;
+      color: #555555;
+      margin-top: 4px;
+    }
+
+    .cafe-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .cafe-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #7b4a1e;
+    }
+
+    .cafe-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2b2b2b;
+      margin-bottom: 5px;
+    }
+
+    .cafe-address {
+      font-size: 12.5px;
+      color: #666666;
+      line-height: 1.45;
+    }
+
+    .receipt-divider {
+      border: none;
+      border-top: 1px solid #d4c5b9;
+      margin: 24px 0;
+    }
+
+    .table-box {
+      margin-bottom: 20px;
+    }
+
+    .table-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .table-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #7b4a1e;
+    }
+
+    .table-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .table-value {
+      font-weight: 600;
+      color: #2b2b2b;
+    }
+
+    .back-order-wrapper {
+      margin-top: 80px;
+    }
+
+    .btn-back-order {
+      display: inline-block;
+      border: 2px solid #23120b;
+      border-radius: 9999px;
+      background: #ffffff;
+      color: #23120b;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 10px 32px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s ease;
+    }
+
+    .btn-back-order:hover {
+      background: #23120b;
+      color: #ffffff;
+    }
+
+    /* ─── RIGHT COLUMN ─── */
+    .receipt-right {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .your-order-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #7b4a1e;
+      margin-bottom: 14px;
+    }
+
+    .order-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .order-item-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .order-item-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .order-item-desc {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .order-item-qty {
+      font-weight: 600;
+      color: #333333;
+      min-width: 22px;
+    }
+
+    .order-item-name {
+      font-weight: 600;
+      color: #222222;
+    }
+
+    .order-item-price {
+      font-size: 13px;
+      color: #666666;
+      margin-left: 36px;
+    }
+
+    .price-breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-bottom: 22px;
+      border-top: 1px solid #f0e6dc;
+      padding-top: 16px;
+    }
+
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13.5px;
+      color: #444444;
+    }
+
+    .price-row.total-row {
+      font-size: 15px;
+      font-weight: 800;
+      color: #23120b;
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px dashed #d8c7b8;
+    }
+
+    .payment-badge-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fbf5ee;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+
+    .action-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .btn-track {
+      border: 1.5px solid #72421f;
+      border-radius: 9999px;
+      background: #72421f;
+      color: #ffffff;
+      padding: 8px 26px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-track:hover {
+      background: #552d11;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <span class="navbar-logo">Coffee Shop</span>
+    <div class="navbar-links">
+      <a href="products.html">Products</a>
+      <a href="cart.html">Checkout</a>
+    </div>
+  </nav>
+  <div class="nav-divider"></div>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <div class="receipt-container">
+
+      <!-- LEFT -->
+      <div class="receipt-left">
+
+        <div class="status-alert-box">
+          <div class="status-alert-title">
+            <span>✓</span> Pesanan Berhasil Masuk!
+          </div>
+          <div class="status-alert-num" id="order-num-display">Nomor: ORD-000000</div>
+        </div>
+
+        <div class="closest-cafe-box">
+          <div class="cafe-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#00b4d8">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+            <span class="cafe-title">Closest cafe:</span>
+          </div>
+          <div class="cafe-name">Co/Choc Tebet (1.5 km)</div>
+          <div class="cafe-address">
+            Jl. Santuy no. 41, Tebet Barat, Tebet, Jakarta Selatan
+          </div>
+        </div>
+
+        <hr class="receipt-divider" />
+
+        <div class="table-box">
+          <div class="table-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#e63946">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+            <span class="table-title">Nomor Meja</span>
+          </div>
+          <div class="table-content">
+            <span class="table-value" id="order-table-num">Meja 1</span>
+          </div>
+        </div>
+
+        <div class="back-order-wrapper">
+          <a href="products.html" class="btn-back-order">&lt; Back to Order</a>
+        </div>
+
+      </div>
+
+      <!-- RIGHT -->
+      <div class="receipt-right">
+
+        <div class="your-order-title">Your order:</div>
+        <div class="order-items-list" id="order-items-container">
+          <!-- Injected by script -->
+        </div>
+
+        <!-- Breakdown -->
+        <div class="price-breakdown">
+          <div class="price-row">
+            <span>Subtotal</span>
+            <span id="price-subtotal">Rp 0</span>
+          </div>
+          <div class="price-row">
+            <span>Delivery fee</span>
+            <span id="price-delivery">Rp 3.000</span>
+          </div>
+          <div class="price-row">
+            <span>Packaging fee</span>
+            <span id="price-packaging">Rp 5.000</span>
+          </div>
+          <div class="price-row">
+            <span>Promo</span>
+            <span id="price-promo">Rp 0</span>
+          </div>
+          <div class="price-row total-row">
+            <span>TOTAL</span>
+            <span id="price-total">Rp 0</span>
+          </div>
+        </div>
+
+        <!-- Payment Info -->
+        <div class="payment-badge-row">
+          <div>
+            <strong>Metode:</strong> <span id="payment-method-val">CC-Wallet</span>
+          </div>
+          <div>
+            <strong>Status:</strong> <span id="payment-status-val" style="color:#27ae60;font-weight:700;">Lunas</span>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn-back-order" style="font-size:13px;padding:8px 24px;" onclick="window.print()">Cetak Struk</button>
+          <a class="btn-track" id="btn-track" href="#">Lacak Pesanan</a>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-brand">
+      <span class="footer-brand-logo">Coffee Shop</span>
+      <span class="footer-brand-tagline">one Stop | one Heart | one Cup</span>
+    </div>
+    <div class="footer-links">
+      <a href="home.html" class="footer-pill" id="footer-btn-company">our Company</a>
+      <a href="products.html?type=coffee" class="footer-pill" id="footer-btn-coffee">our Coffee</a>
+      <a href="products.html?type=pastry" class="footer-pill" id="footer-btn-pastry">our Pastry</a>
+    </div>
+    <div class="footer-copy">@ 2023 All Rights Reserved</div>
+  </footer>
+
+</div>
+
+<script type="module">
+  import { formatRupiah } from '../cart.js';
+
+  const params = new URLSearchParams(location.search);
+  const orderRaw = params.get('order');
+
+  let order = null;
+  if (orderRaw) {
+    try {
+      order = JSON.parse(decodeURIComponent(orderRaw));
+    } catch {}
+  }
+
+  if (!order) {
+    /* Fallback data */
+    order = {
+      id: 1,
+      order_number: 'ORD-892401',
+      table_number: 'Meja 1',
+      payment_method: 'CC-Wallet',
+      payment_status: 'lunas',
+      items: [
+        { item_name: 'Iced Coffee Sweet Heaven', name: 'Iced Coffee Sweet Heaven', quantity: 1, subtotal: 24000 }
+      ],
+      subtotal: 24000,
+      total_price: 32000,
+      total_amount: 32000
+    };
+  }
+
+  /* Populate */
+  document.getElementById('order-num-display').textContent = `Nomor: ${order.order_number || ('ORD-' + order.id)}`;
+  document.getElementById('order-table-num').textContent = order.table_number || 'Meja 1';
+  document.getElementById('payment-method-val').textContent = order.payment_method || 'CC-Wallet';
+  document.getElementById('payment-status-val').textContent = (order.payment_status || 'Lunas').toUpperCase();
+
+  const items = order.items || [];
+  const itemsContainer = document.getElementById('order-items-container');
+  itemsContainer.innerHTML = items.map(item => `
+    <div class="order-item-row">
+      <div class="order-item-main">
+        <div class="order-item-desc">
+          <span class="order-item-qty">${item.quantity}x</span>
+          <span class="order-item-name">${item.item_name || item.name || 'Menu Item'}</span>
+        </div>
+      </div>
+      <div class="order-item-price">${formatRupiah(item.subtotal || (item.price * item.quantity))}</div>
+    </div>
+  `).join('');
+
+  const subtotal = order.subtotal || items.reduce((s, i) => s + (i.subtotal || 0), 0) || 24000;
+  const delivery = 3000;
+  const packaging = 5000;
+  const discount = order.discount_amount || 0;
+  const total = order.total_amount || order.total_price || (subtotal + delivery + packaging - discount);
+
+  document.getElementById('price-subtotal').textContent  = formatRupiah(subtotal);
+  document.getElementById('price-delivery').textContent  = formatRupiah(delivery);
+  document.getElementById('price-packaging').textContent = formatRupiah(packaging);
+  document.getElementById('price-promo').textContent     = discount > 0 ? `- ${formatRupiah(discount)}` : 'Rp 0';
+  document.getElementById('price-total').textContent     = formatRupiah(total);
+
+  document.getElementById('btn-track').href = `track.html?id=${order.id || 1}`;
+</script>
+
+</body>
+</html>
